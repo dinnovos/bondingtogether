@@ -5,7 +5,7 @@ use GuzzleHttp\Client;
 
 $token = getTokenSiigo();
 
-exit($token);
+exit(json_encode(["token" => $token]));
 
 function getTokenSiigo(){
 
@@ -50,10 +50,9 @@ function apiSiigo($method, $url, $paramenters, $new_base_url = null){
         'base_uri' => $base_url
     ]);
 
-    
+    try {
         $response = $client->request($method, $_url, $paramenters);
         $body = $response->getBody();
-        try {
         return $body->getContents();
     } catch (\Exception $e) {}
 
