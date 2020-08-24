@@ -2,26 +2,49 @@
 require 'vendor/autoload.php';
 
 use GuzzleHttp\Client;
+use Dotenv\Dotenv;
 
-$token = getTokenSiigo();
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+$token = getTokenSiigo($_ENV);
 
 exit(json_encode(["token" => $token]));
 
-function getTokenSiigo(){
+function getTokenSiigo($env){
 
-    $result = apiSiigo('POST', '/connect/token', [
-        'headers' => [
-            'Content-Type'      => 'application/x-www-form-urlencoded',
-            'Authorization'     => 'Basic U2lpZ29XZWI6QUJBMDhCNkEtQjU2Qy00MEE1LTkwQ0YtN0MxRTU0ODkxQjYx',
-            'Accept'            => 'application/json'
-        ],
-        'form_params' => [
-            'grant_type'    => 'password',
-            'username'      => 'EMPRESA2CAPACITACION\empresa2@apionmicrosoft.com',
-            'password'      => 's112pempresa2#',
-            'scope'         => 'WebApi offline_access',
-        ]
-    ], 'https://siigonube.siigo.com:50050');
+    if($env["mode"] === "production"){
+
+        $result = apiSiigo('POST', '/connect/token', [
+            'headers' => [
+                'Content-Type'      => 'application/x-www-form-urlencoded',
+                'Authorization'     => $env["authorization"],
+                'Accept'            => 'application/json'
+            ],
+            'form_params' => [
+                'grant_type'    => $env["production_grant_type"],
+                'username'      => $env["production_username"],
+                'password'      => $env["production_password"],
+                'scope'         => $env["production_scope"],
+            ]
+        ], $env["siigo_server"]);
+
+    }else{
+
+        $result = apiSiigo('POST', '/connect/token', [
+            'headers' => [
+                'Content-Type'      => 'application/x-www-form-urlencoded',
+                'Authorization'     => $env["authorization"],
+                'Accept'            => 'application/json'
+            ],
+            'form_params' => [
+                'grant_type'    => $env["sandbox_grant_type"],
+                'username'      => $env["sandbox_username"],
+                'password'      => $env["sandbox_password"],
+                'scope'         => $env["sandbox_scope"],
+            ]
+        ], $env["siigo_server"]);
+    }
 
     if($result){
         $data = json_decode($result);
